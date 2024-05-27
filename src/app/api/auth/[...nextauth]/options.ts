@@ -1,9 +1,9 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs"
-import { Connect } from "../../../../db/dbConfig"
-import UserModel from "../../../../model/user.model";
-import { envVariables } from "../../../../config/config"
+import { Connect } from '@/db/dbConfig'
+import UserModel from "@/model/userModel";
+import { envVariables } from '@/config/config'
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -11,22 +11,26 @@ export const authOptions: NextAuthOptions = {
             id: "Credentials",
             name: "Credentials",
             credentials: {
-                email: {label: "Email", type: "email", placeholder: "Enter email-id"},
+                username: {label: "Email", type: "text", placeholder: "Enter username"},
                 password: {label: "Password", type: "password", placeholder: "Enter password"},
             },
-            async authorize(credentials: any): Promise<any> {
+            async authorize(credentials): Promise<any> {
                 await Connect()
                 try {
-                    const user = await UserModel.findOne({$or: [
-                        {email: credentials.identifier}, {username: credentials.identifier}
-                    ]})
+                    // const user = await UserModel.findOne({$or: [
+                    //     {email: credentials?.email}, {username: credentials?.username}
+                    // ]})
+                    const user = await UserModel.findOne({username: credentials?.username})
                     if(!user) {
                         throw new Error("No user found with thid email")
                     }
                     if(!user.isVerified) {
                         throw new Error("Verify your account before login")
                     }
-                    const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password)
+                    const isPasswordCorrect = await bcrypt.compare(
+                        <string>credentials?.password, 
+                        user.password
+                    )
 
                     if(isPasswordCorrect) {
                         return user;
@@ -41,15 +45,23 @@ export const authOptions: NextAuthOptions = {
             }
         })
     ],
-    pages: {
-        signIn: '/register'
-    },
+    // pages: {
+    //     signIn: 'auth/sign-in'
+    // },
     session: {
         strategy: "jwt",
+        maxAge: 60 * 60 * 24,
+        updateAge: 60 * 60,
     },
     secret: envVariables.secretToken as string,
     callbacks: {
         async session({session, token}) {
+            if(token) {
+                session.user._id = token._id?.toString()
+                session.user.isVerified = token.isVerified
+                session.user.isAcceptingMessages = token.isAcceptingMessages
+                session.user.username = token.username
+            }
             return session;
         },
         async jwt({token, user}) {
@@ -60,6 +72,6 @@ export const authOptions: NextAuthOptions = {
                 token.username = user.username
             }
             return token;
-        }
+        },
     }
 }
