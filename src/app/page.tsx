@@ -1,5 +1,6 @@
 'use client'
 import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
 
 export default function Home() {
     const { data: session } = useSession();
@@ -18,11 +19,17 @@ export default function Home() {
 
     return (
         <main>
-            <div>Signed in as: {session.user.email}</div><br /><br />
+            <div>Signed in as: {session.user.email}</div>
+            <br />
             <button 
               className="bg-white text-black p-2 m-4 rounded-md"
               onClick={() => signOut()}
             >Sign-Out</button>
+            <br />
+            <Link 
+                href={'/dashboard'} 
+                className="bg-white text-black p-2 m-4 rounded-md"
+            >Dashboard</Link>
         </main>
     )
 }
