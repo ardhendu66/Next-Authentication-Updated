@@ -9,10 +9,11 @@ export default function Home() {
         return (
             <div>
                 <h1> Not Verified </h1>
-                <button 
-                  className="bg-white text-black p-2 m-4 rounded-md" 
-                  onClick={() => signIn()}
-                >Sign-in</button>
+                <br />
+                <Link 
+                    href={'/api/auth/signin'}
+                    className="p-3 m-2 rounded-lg bg-sky-700 text-white" 
+                >   Sign in  </Link>
             </div>
         )
     }
@@ -22,13 +23,13 @@ export default function Home() {
             <div>Signed in as: {session.user.email}</div>
             <br />
             <button 
-              className="bg-white text-black p-2 m-4 rounded-md"
+              className="p-2 m-4 rounded-md bg-sky-700 text-white"
               onClick={() => signOut()}
             >Sign-Out</button>
             <br />
             <Link 
                 href={'/dashboard'} 
-                className="bg-white text-black p-2 m-4 rounded-md"
+                className="p-2 m-4 rounded-md bg-sky-700 text-white"
             >Dashboard</Link>
         </main>
     )

@@ -1,9 +1,10 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs"
-import { Connect } from '@/db/dbConfig'
+import bcrypt from "bcryptjs";
+import { Connect } from '@/db/dbConfig';
 import UserModel from "@/model/userModel";
-import { envVariables } from '@/config/config'
+import { envVariables } from '@/config/config';
+import axios from "axios";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -15,6 +16,8 @@ export const authOptions: NextAuthOptions = {
                 password: {label: "Password", type: "password", placeholder: "Enter password"},
             },
             async authorize(credentials): Promise<any> {
+                console.log("cred ", credentials);
+                
                 await Connect()
                 try {
                     // const user = await UserModel.findOne({$or: [
@@ -22,14 +25,13 @@ export const authOptions: NextAuthOptions = {
                     // ]})
                     const user = await UserModel.findOne({username: credentials?.username})
                     if(!user) {
-                        throw new Error("No user found with thid email")
+                        throw new Error("No user found with this username")
                     }
                     if(!user.isVerified) {
                         throw new Error("Verify your account before login")
                     }
                     const isPasswordCorrect = await bcrypt.compare(
-                        <string>credentials?.password, 
-                        user.password
+                        <string>credentials?.password, user.password
                     )
 
                     if(isPasswordCorrect) {
@@ -46,7 +48,7 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     // pages: {
-    //     signIn: 'auth/sign-in'
+    //     signIn: '/signin',
     // },
     session: {
         strategy: "jwt",
