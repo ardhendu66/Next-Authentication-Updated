@@ -1,4 +1,4 @@
-import UserModel from '@/model/user.model'
+import UserModel from '@/model/userModel'
 import nodemailer from 'nodemailer'
 import bcrypt from 'bcryptjs'
 import { envVariables } from '@/config/config'
