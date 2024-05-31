@@ -11,7 +11,7 @@ export default function Home() {
                 <h1> Not Verified </h1>
                 <br />
                 <Link 
-                    href={'/api/auth/signin'}
+                    href={'/signin'}
                     className="p-3 m-2 rounded-lg bg-sky-700 text-white" 
                 >   Sign in  </Link>
             </div>

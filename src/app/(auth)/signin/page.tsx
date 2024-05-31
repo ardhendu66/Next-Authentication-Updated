@@ -1,29 +1,22 @@
 "use client"
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
-export default function SignIn() {
-    const {data: session, status} = useSession();
-    const router = useRouter();
+export default function SignInPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const {data: session, status} = useSession();
+    const router = useRouter();
+    const pathName = usePathname();
 
-    // useEffect(() => {
-    //     console.log("render")        
-    // }, [session])
+    useEffect(() => {
+        if(status === "authenticated") {
+            router.push("/dashboard")
+        }
+    }, [status, router, pathName])
 
-    // useEffect(() => {
-    //     if(status === "authenticated") {
-    //         router.push("/dashboard")
-    //     }
-    // }, [status, router])
-
-    if(status === "authenticated") {
-        router.push("/dashboard")
-    }
-
-    async function signInWithCredentials(event: React.MouseEvent<HTMLButtonElement>) {
+    const signInWithCredentials = async (event: any) => {
         event.preventDefault();
         console.log(username, password)
         try {
@@ -32,13 +25,14 @@ export default function SignIn() {
                 redirect: false,
                 callbackUrl: '/dashboard',
             })
+            console.log("response1: ", res);
             if(res?.ok) {
                 router.push('/dashboard')
             }
             else {
                 console.error("Authentication error: ", res?.error)
             }
-            console.log(res)        
+            console.log("response2: ", res)        
         }
         catch(err) {
             console.error("signIn Error: ", err)            
@@ -47,9 +41,9 @@ export default function SignIn() {
 
     return (
         <div className="flex items-center justify-center w-[100vw] min-h-screen">
-            <div 
+            <form 
                 className="flex flex-col w-2/3 h-1/3 p-6 shadow-2xl rounded-md border-sky-400 border-t-4"
-                // onSubmit={signInWithCredentials}
+                onSubmit={e => signInWithCredentials(e)}
             >
                 <label className="flex flex-col">
                     Username
@@ -76,13 +70,12 @@ export default function SignIn() {
                 </label>
                 <br />
                 <button 
-                    type="button"
+                    type="submit"
                     className="bg-sky-600 text-white p-3 rounded-md font-semibold text-lg shadow-md"
-                    onClick={signInWithCredentials}
                 > 
                     Sign in 
                 </button>
-            </div>
+            </form>
         </div>
     )
 }

@@ -4,25 +4,20 @@ import bcrypt from "bcryptjs";
 import { Connect } from '@/db/dbConfig';
 import UserModel from "@/model/userModel";
 import { envVariables } from '@/config/config';
-import axios from "axios";
 
 export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
-            id: "Credentials",
-            name: "Credentials",
+            id: "credentials",
+            name: "credentials",
             credentials: {
                 username: {label: "Username", type: "text", placeholder: "Enter username"},
                 password: {label: "Password", type: "password", placeholder: "Enter password"},
             },
             async authorize(credentials): Promise<any> {
-                console.log("cred ", credentials);
-                
+                // console.log("cred ", credentials);
                 await Connect()
                 try {
-                    // const user = await UserModel.findOne({$or: [
-                    //     {email: credentials?.email}, {username: credentials?.username}
-                    // ]})
                     const user = await UserModel.findOne({username: credentials?.username})
                     if(!user) {
                         throw new Error("No user found with this username")
@@ -33,29 +28,27 @@ export const authOptions: NextAuthOptions = {
                     const isPasswordCorrect = await bcrypt.compare(
                         <string>credentials?.password, user.password
                     )
-
+                    console.log("paswodcorrect", user );
+                    
                     if(isPasswordCorrect) {
                         return user;
                     }
                     else {
-                        throw new Error('Incorrect password')
-                    }
+                        console.log("Incorrect Password");
+                        return;
+                    }                    
                 }
                 catch(err: any) {
-                    throw new Error(err)
+                    throw new Error(err);
                 }
             }
         })
     ],
-    // pages: {
-    //     signIn: '/signin',
-    // },
     session: {
         strategy: "jwt",
         maxAge: 60 * 60 * 24,
         updateAge: 60 * 60,
     },
-    secret: envVariables.secretToken as string,
     callbacks: {
         async session({session, token}) {
             if(token) {
@@ -63,7 +56,10 @@ export const authOptions: NextAuthOptions = {
                 session.user.isVerified = token.isVerified
                 session.user.isAcceptingMessages = token.isAcceptingMessages
                 session.user.username = token.username
+                session.user.name = token.username
+                session.user.image = "image"
             }
+            // console.log(session);
             return session;
         },
         async jwt({token, user}) {
@@ -72,8 +68,15 @@ export const authOptions: NextAuthOptions = {
                 token.isVerified = user.isVerified
                 token.isAcceptingMessages = user.isAcceptingMessages
                 token.username = user.username
+                token.name = user.name
+                token.picture = user.image
+                // console.log("token: ", token);
             }
             return token;
         },
-    }
+    },
+    secret: envVariables.secretToken as string,
+    pages: {
+        signIn: '/signin',
+    },
 }
